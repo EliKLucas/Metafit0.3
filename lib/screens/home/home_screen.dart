@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import '../../services/profile_service.dart';
+import '../../models/user_profile.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,6 +10,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
+    final userId = authService.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -19,16 +22,40 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Welcome, ${authService.currentUser?.email ?? "User"}!'),
-            const SizedBox(height: 20),
-            // We'll add more widgets here as we develop the app
-          ],
-        ),
-      ),
+      body:
+          userId == null
+              ? const Center(child: Text('No user logged in'))
+              : StreamBuilder<UserProfile?>(
+                stream: context.read<ProfileService>().profileStream(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final profile = snapshot.data;
+                  if (profile == null) {
+                    return const Center(child: Text('No profile found'));
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Welcome, ${profile.name ?? "User"}!'),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Fitness Goal: ${profile.fitnessGoal ?? "Not set"}',
+                        ),
+                        Text(
+                          'Experience Level: ${profile.experienceLevel ?? "Not set"}',
+                        ),
+                        // We'll add more widgets here as we develop the app
+                      ],
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

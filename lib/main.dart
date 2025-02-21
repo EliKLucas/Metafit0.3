@@ -5,6 +5,7 @@ import 'services/auth_service.dart';
 import 'screens/auth/sign_in_screen.dart';
 import 'firebase_options.dart';
 import 'screens/auth/auth_wrapper.dart';
+import 'services/profile_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,10 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthService())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthService()),
+        Provider(create: (_) => ProfileService()),
+      ],
       child: const FitnessApp(),
     ),
   );
